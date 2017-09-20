@@ -78,20 +78,29 @@ class CCStd(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            piece_request_list = []
-            for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
-                if key in av_set and len(piece_request_list) < n:
-                    piece_request_list.append(key)
+            if history.current_round() < self.dummy_state["threshold"] 
+                for piece_id in random.sample(isect, n):
+                # aha! The peer has this piece! Request it.
+                # which part of the piece do we need next?
+                # (must get the next-needed blocks in order)
+                start_block = self.pieces[piece_id]
+                r = Request(self.id, peer.id, piece_id, start_block)
+                requests.append(r)
+            else
+                piece_request_list = []
+                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
+                    if key in av_set and len(piece_request_list) < n:
+                        piece_request_list.append(key)
 
-            for piece_id in piece_request_list:
+                for piece_id in piece_request_list:
                 # aha! The peer has this piece! Request it.
                 # which part of the piece do we need next?
                 # (must get the next-needed blocks in order)
 
                 # rarest first
-                start_block = self.pieces[piece_id]
-                r = Request(self.id, peer.id, piece_id, start_block)
-                requests.append(r)
+                    start_block = self.pieces[piece_id]
+                    r = Request(self.id, peer.id, piece_id, start_block)
+                    requests.append(r)
 
         return requests
 
@@ -113,18 +122,43 @@ class CCStd(Peer):
         # For example, history.downloads[round-1] (if round != 0, of course)
         # has a list of Download objects for each Download to this peer in
         # the previous round.
+        past_downloads = {}
+        if round > 0.0:
+            past_downloads = history.downloads[round-1]
+        if round > 1:
+            temp_downloads = history.downloads[round-2]
+            for i in temp_downloads:
+                temp = 0
+                for j in past_downloads:
+                    if i.from_id == j.from_id:
+                        j.blocks = (j.blocks + i.blocks)/2.0
+                        temp = 1
+                if temp == 0:
+                    past_downloads.append(i)
+
+        download_dict={}
+        for i in past_downloads:
+            download_dict[i.from_id] = i.blocks
 
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
             chosen = []
             bws = []
         else:
-            logging.debug("Still here: uploading to a random peer")
+            logging.debug("Still here: uploading to peers")
             # change my internal state for no reason
             self.dummy_state["cake"] = "pie"
+            chosen = []
+            for num, speed in sorted(download_dict.iteritems(), key=lambda (k,v): (v,k)):
+                sat = 0
+                for j in requests:
+                    if num == j.requester_id and sat == 0 and len(chosen) < 3:
+                        chosen.append(num)
+                        sat = 1
+
 
             request = random.choice(requests)
-            chosen = [request.requester_id]
+            chosen.append(request.requester_id)
             # Evenly "split" my upload bandwidth among the one chosen requester
             bws = even_split(self.up_bw, len(chosen))
 
