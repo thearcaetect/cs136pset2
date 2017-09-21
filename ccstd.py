@@ -17,7 +17,8 @@ class CCStd(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["cake"] = "lie"
+        self.dummy_state["threshold"] = 4
+        self.num_slots = 3
     
     def requests(self, peers, history):
         """
@@ -78,15 +79,15 @@ class CCStd(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"] 
+            if history.current_round() < self.dummy_state["threshold"]: 
                 for piece_id in random.sample(isect, n):
-                # aha! The peer has this piece! Request it.
-                # which part of the piece do we need next?
-                # (must get the next-needed blocks in order)
-                start_block = self.pieces[piece_id]
-                r = Request(self.id, peer.id, piece_id, start_block)
-                requests.append(r)
-            else
+                    # aha! The peer has this piece! Request it.
+                    # which part of the piece do we need next?
+                    # (must get the next-needed blocks in order)
+                    start_block = self.pieces[piece_id]
+                    r = Request(self.id, peer.id, piece_id, start_block)
+                    requests.append(r)
+            else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
                     if key in av_set and len(piece_request_list) < n:
@@ -115,28 +116,30 @@ class CCStd(Peer):
         In each round, this will be called after requests().
         """
 
-        round = history.current_round()
+        rd = history.current_round()
         logging.debug("%s again.  It's round %d." % (
-            self.id, round))
+            self.id, rd))
         # One could look at other stuff in the history too here.
         # For example, history.downloads[round-1] (if round != 0, of course)
         # has a list of Download objects for each Download to this peer in
         # the previous round.
         past_downloads = {}
-        if round > 0.0:
-            past_downloads = history.downloads[round-1]
-        if round > 1:
-            temp_downloads = history.downloads[round-2]
+        if rd > 0:
+            past_downloads = history.downloads[rd - 1]
+        if rd > 1:
+            temp_downloads = history.downloads[rd - 2]
             for i in temp_downloads:
-                temp = 0
+                temp = False
                 for j in past_downloads:
                     if i.from_id == j.from_id:
-                        j.blocks = (j.blocks + i.blocks)/2.0
-                        temp = 1
-                if temp == 0:
+                        j.blocks = (j.blocks + i.blocks) / 2.0
+                        temp = True
+                if temp == False:
                     past_downloads.append(i)
 
-        download_dict={}
+        # past downlaods is all past downloads from last two rounds, but averaged
+        # if got something from agent in both rounds
+        download_dict = {}
         for i in past_downloads:
             download_dict[i.from_id] = i.blocks
 
@@ -147,19 +150,24 @@ class CCStd(Peer):
         else:
             logging.debug("Still here: uploading to peers")
             # change my internal state for no reason
-            self.dummy_state["cake"] = "pie"
+            # list of who we will upload to
             chosen = []
+            # TODO: check sorting direction, should be HIGH to LOW
             for num, speed in sorted(download_dict.iteritems(), key=lambda (k,v): (v,k)):
-                sat = 0
-                for j in requests:
-                    if num == j.requester_id and sat == 0 and len(chosen) < 3:
+                double_count = False
+                for request in requests:
+                    if num == request.requester_id and double_count == False and len(chosen) < self.num_slots:
                         chosen.append(num)
-                        sat = 1
+                        double_count = True
+
+            # optimistic unchoking
+            random_request = random.choice(requests)
+            while random_request in chosen:
+                random_request = random.choice(requests)
 
 
-            request = random.choice(requests)
-            chosen.append(request.requester_id)
-            # Evenly "split" my upload bandwidth among the one chosen requester
+            chosen.append(random_request.requester_id)
+            # Evenly "split" my upload bandwidth among the one chosen requesters
             bws = even_split(self.up_bw, len(chosen))
 
         # create actual uploads out of the list of peer ids and bandwidths

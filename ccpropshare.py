@@ -14,12 +14,11 @@ from util import even_split
 from peer import Peer
 
 class CCPropShare(Peer):
-
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["cake"] = "lie"
-    
+        self.dummy_state["threshold"] = 4
+        self.num_slots = 3
     
     def requests(self, peers, history):
         """
@@ -80,15 +79,15 @@ class CCPropShare(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"] 
+            if history.current_round() < self.dummy_state["threshold"]: 
                 for piece_id in random.sample(isect, n):
-                # aha! The peer has this piece! Request it.
-                # which part of the piece do we need next?
-                # (must get the next-needed blocks in order)
-                start_block = self.pieces[piece_id]
-                r = Request(self.id, peer.id, piece_id, start_block)
-                requests.append(r)
-            else
+                    # aha! The peer has this piece! Request it.
+                    # which part of the piece do we need next?
+                    # (must get the next-needed blocks in order)
+                    start_block = self.pieces[piece_id]
+                    r = Request(self.id, peer.id, piece_id, start_block)
+                    requests.append(r)
+            else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
                     if key in av_set and len(piece_request_list) < n:
