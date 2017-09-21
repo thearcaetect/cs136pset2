@@ -152,15 +152,16 @@ class CCPropShare(Peer):
                             chosen_dict[num] = speed
                             already_chosen = True
 
-            bw_sum = sum(chosen_dict.values())  
-            bws = [0.9 * x * float(self.up_bw) / max(bw_sum, 1) for x in chosen_dict.values()]
-
+            bw_sum = sum(chosen_dict.values())
+            for x in chosen_dict:  
+                chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
             # optimistic unchoking
             random_request = random.choice(requests)
-            while random_request.requester_id in chosen_dict:
+            # TODO: stop after gone through all requests
+            for i in range(len) random_request.requester_id in chosen_dict:
                 random_request = random.choice(requests)
             
-            chosen_dict[random_request.requester_id] = 0.1 * float(self.up_bw)
+            chosen_dict[random_request.requester_id] = (round(0.1 * self.up_bw - 0.49))
             # print(chosen)
             # print(bws)
         # create actual uploads out of the list of peer ids and bandwidths
