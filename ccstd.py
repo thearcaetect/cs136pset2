@@ -116,18 +116,18 @@ class CCStd(Peer):
         In each round, this will be called after requests().
         """
 
-        rd = history.current_round()
+        curr_round = history.current_round()
         logging.debug("%s again.  It's round %d." % (
-            self.id, rd))
+            self.id, curr_round))
         # One could look at other stuff in the history too here.
         # For example, history.downloads[round-1] (if round != 0, of course)
         # has a list of Download objects for each Download to this peer in
         # the previous round.
         past_downloads = {}
-        if rd > 0:
-            past_downloads = history.downloads[rd - 1]
-        if rd > 1:
-            temp_downloads = history.downloads[rd - 2]
+        if curr_round > 0:
+            past_downloads = history.downloads[curr_round - 1]
+        if curr_round > 1:
+            temp_downloads = history.downloads[curr_round - 2]
             for i in temp_downloads:
                 temp = False
                 for j in past_downloads:
@@ -139,9 +139,14 @@ class CCStd(Peer):
 
         # past downlaods is all past downloads from last two rounds, but averaged
         # if got something from agent in both rounds
+        # initialize a dictionary with past download objects
+        # get the total spead from each peer given over different files
         download_dict = {}
-        for i in past_downloads:
-            download_dict[i.from_id] = i.blocks
+        for download in past_downloads:
+            if download.from_id in download_dict:
+                download_dict[download.from_id] += download.blocks
+            else:
+                download_dict[download.from_id] = download.blocks
 
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
@@ -162,9 +167,8 @@ class CCStd(Peer):
 
             # optimistic unchoking
             random_request = random.choice(requests)
-            while random_request in chosen:
+            while random_request.requester_id in chosen:
                 random_request = random.choice(requests)
-
 
             chosen.append(random_request.requester_id)
             # Evenly "split" my upload bandwidth among the one chosen requesters

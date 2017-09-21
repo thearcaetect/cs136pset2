@@ -115,7 +115,6 @@ class CCPropShare(Peer):
 
         In each round, this will be called after requests().
         """
-
         curr_round = history.current_round()
         logging.debug("%s again.  It's round %d." % (
             self.id, curr_round))
@@ -127,45 +126,45 @@ class CCPropShare(Peer):
         if curr_round > 0.0:
             past_downloads = history.downloads[curr_round-1]
 
-        download_dict={}
-        for i in past_downloads:
-            download_dict[i.from_id] = i.blocks
+        download_dict = {}
+        for download in past_downloads:
+            if download.from_id in download_dict:
+                download_dict[download.from_id] += download.blocks
+            else:
+                download_dict[download.from_id] = download.blocks
 
+        chosen_dict = {}
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
-            chosen = []
-            bws = []
         else:
             logging.debug("Still here: uploading to peers")
             # change my internal state for no reason
-            self.dummy_state["cake"] = "pie"
-            chosen = []
-            bws = []
+            # initialize dictionary with peer ids as keys and bandwidth
+            # allocated as values
+            
+            # check that dict is sorted by highest speed first
             for num, speed in sorted(download_dict.iteritems(), key=lambda (k,v): (v,k)):
-                sat = 0
-                total_speed = 0
-                for j in requests:
-                    if num == j.requester_id:
-                        total_speed = total_speed + speed
-                        if sat == 0:
-                            chosen.append(num)
-                            sat = 1
-                if total_speed != 0:
-                    bws.append(total_speed)
+                already_chosen = False
+                # total speed allows for possibility of getting piece 1 and piece 2
+                for request in requests:
+                    if num == request.requester_id:
+                        if already_chosen == False:
+                            chosen_dict[num] = speed
+                            already_chosen = True
 
+            bw_sum = sum(chosen_dict.values())  
+            bws = [0.9 * x * float(self.up_bw) / max(bw_sum, 1) for x in chosen_dict.values()]
 
-            print(chosen)
-            print(bws)
-            bw_sum = sum(bws)    
-            bws = [0.9 * x * self.up_bw / max(bw_sum, 1) for x in bws]
-            request = random.choice(requests)
-            chosen.append(request.requester_id)
-            bws.append(round(0.1 * self.up_bw - 0.4))
-            print(chosen)
-            print(bws)
-
+            # optimistic unchoking
+            random_request = random.choice(requests)
+            while random_request.requester_id in chosen_dict:
+                random_request = random.choice(requests)
+            
+            chosen_dict[random_request.requester_id] = 0.1 * float(self.up_bw)
+            # print(chosen)
+            # print(bws)
         # create actual uploads out of the list of peer ids and bandwidths
-        uploads = [Upload(self.id, peer_id, bw)
-                   for (peer_id, bw) in zip(chosen, bws)]
+        uploads = [Upload(self.id, peer_id, chosen_dict[peer_id])
+                   for peer_id in chosen_dict]
 
         return uploads
