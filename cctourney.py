@@ -21,7 +21,7 @@ class CCTourney(Peer):
         self.rho = 3
         self.alpha = 0.2
         self.gamma = 0.1
-        self.unchoking_fraction = 0.4
+        self.unchoking_fraction = 0.3
         # dicttionaries for expected upload and download
         self.expected_dl = {}
         self.expected_ul = {}

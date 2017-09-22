@@ -17,7 +17,7 @@ class CCStd(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["threshold"] = 4
+        self.dummy_state["threshold"] = 8
         self.num_slots = 3
     
     def requests(self, peers, history):
