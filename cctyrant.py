@@ -155,10 +155,10 @@ class CCTyrant(Peer):
                     counter = 0
                     max_round = min(curr_round, self.rho)
                     for i in range(max_round):
-                        print history.downloads
-                        print curr_round
-                        print max_round
-                        print i
+                        # print history.downloads
+                        # print curr_round
+                        # print max_round
+                        # print i
                         my_round = history.downloads[curr_round - i - 1]
                         for download in my_round:
                             if download.from_id == peer.id:
@@ -181,7 +181,7 @@ class CCTyrant(Peer):
             chosen = []
             bws = []
             capacity_used = 0
-            print self.expected_dl
+            # print self.expected_dl
             for peer in peers:
                 ratio_dict[peer.id] = self.expected_dl[peer.id] / self.expected_ul[peer.id]
                 for key, value in sorted(ratio_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
