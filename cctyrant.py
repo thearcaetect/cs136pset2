@@ -17,11 +17,13 @@ class CCTyrant(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.dummy_state = dict()
-        self.dummy_state["cake"] = "lie"
+        self.dummy_state["threshold"] = 4
         self.rho = 3
         self.alpha = 0.2
         self.gamma = 0.1
         # dicttionaries for expected upload and download
+        self.expected_dl = {}
+        self.expected_ul = {}
 
     
     def requests(self, peers, history):
@@ -150,21 +152,19 @@ class CCTyrant(Peer):
                     self.expected_ul[peer.id] = (1 + self.alpha) * self.expected_ul[peer.id]
                 else:
                     self.expected_dl[peer.id] = download_dict[peer.id]
-                    loyalty = True
-                    for i < min(curr_round, self.rho)
-                        my_round = history.downloads[curr_round-i]
-                        counter = 0
+                    counter = 0
+                    max_round = min(curr_round, self.rho)
+                    for i in range(max_round):
+                        print history.downloads
+                        print curr_round
+                        print max_round
+                        print i
+                        my_round = history.downloads[curr_round - i - 1]
                         for download in my_round:
-                            if download.from_id != peer.id:
-                                counter++
-                        if counter == len(my_round)
-
-
-
-
-
-
-
+                            if download.from_id == peer.id:
+                                counter += 1
+                    if counter == max_round:
+                        self.expected_ul[peer.id] = (1-self.gamma) * self.expected_ul[peer.id]
 
 
         if len(requests) == 0:
@@ -181,14 +181,14 @@ class CCTyrant(Peer):
             chosen = []
             bws = []
             capacity_used = 0
+            print self.expected_dl
             for peer in peers:
-                ratio_dict[peer] = expected_dl[peer] / expected_ul[peer]
+                ratio_dict[peer.id] = self.expected_dl[peer.id] / self.expected_ul[peer.id]
                 for key, value in sorted(ratio_dict.iteritems(), key= lambda (k, v): (v, k)):
                     if capacity_used + self.expected_ul[key] <= self.up_bw:
                         chosen.append(key)
                         bws.append(self.expected_ul[key])
                         capacity_used += self.expected_ul[key]
-
 
             # Evenly "split" my upload bandwidth among the one chosen requester
 
