@@ -16,8 +16,7 @@ from peer import Peer
 class CCStd(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
-        self.dummy_state = dict()
-        self.dummy_state["threshold"] = 8
+        self.threshold = 0
         self.num_slots = 3
     
     def requests(self, peers, history):
@@ -79,7 +78,7 @@ class CCStd(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"]: 
+            if history.current_round() < self.threshold: 
                 for piece_id in random.sample(isect, n):
                     # aha! The peer has this piece! Request it.
                     # which part of the piece do we need next?
@@ -90,10 +89,10 @@ class CCStd(Peer):
             else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
-                    if key in av_set and len(piece_request_list) < n:
+                    if key in av_set:
                         piece_request_list.append(key)
 
-                for piece_id in piece_request_list:
+                for piece_id in random.sample(piece_request_list[:max(len(self.pieces)/3, 20)],n):
                 # aha! The peer has this piece! Request it.
                 # which part of the piece do we need next?
                 # (must get the next-needed blocks in order)
@@ -102,6 +101,8 @@ class CCStd(Peer):
                     start_block = self.pieces[piece_id]
                     r = Request(self.id, peer.id, piece_id, start_block)
                     requests.append(r)
+       # print("my requests")
+       # print(requests)
 
         return requests
 
@@ -181,10 +182,12 @@ class CCStd(Peer):
 
             while random_request.requester_id in chosen and unchoke == True:
                     random_request = random.choice(requests)
-
-            chosen.append(random_request.requester_id)
+            if unchoke == True:
+                chosen.append(random_request.requester_id)
             # Evenly "split" my upload bandwidth among the one chosen requesters
             bws = even_split(self.up_bw, len(chosen))
+            print(chosen)
+            print(bws)
 
         # create actual uploads out of the list of peer ids and bandwidths
         uploads = [Upload(self.id, peer_id, bw)

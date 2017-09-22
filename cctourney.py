@@ -16,13 +16,12 @@ from peer import Peer
 class CCTourney(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
-        self.dummy_state = dict()
-        self.dummy_state["threshold"] = 4
+        self.threshold = 4
         self.rho = 3
         self.alpha = 0.2
         self.gamma = 0.1
         self.unchoking_fraction = 0.3
-        # dicttionaries for expected upload and download
+        # dictionaries for expected upload and download
         self.expected_dl = {}
         self.expected_ul = {}
 
@@ -86,7 +85,7 @@ class CCTourney(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"]: 
+            if history.current_round() < self.threshold: 
                 for piece_id in random.sample(isect, n):
                     # aha! The peer has this piece! Request it.
                     # which part of the piece do we need next?
@@ -97,10 +96,10 @@ class CCTourney(Peer):
             else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
-                    if key in av_set and len(piece_request_list) < n:
+                    if key in av_set:
                         piece_request_list.append(key)
 
-                for piece_id in piece_request_list:
+                for piece_id in random.sample(piece_request_list[:max(len(self.pieces)/3, 20)],n):
                 # aha! The peer has this piece! Request it.
                 # which part of the piece do we need next?
                 # (must get the next-needed blocks in order)
@@ -109,6 +108,8 @@ class CCTourney(Peer):
                     start_block = self.pieces[piece_id]
                     r = Request(self.id, peer.id, piece_id, start_block)
                     requests.append(r)
+       # print("my requests")
+       # print(requests)
 
         return requests
 
@@ -129,7 +130,7 @@ class CCTourney(Peer):
 
         if curr_round == 0:
             for peer in peers:
-                self.expected_dl[peer.id] = 1
+                self.expected_dl[peer.id] = 0
                 self.expected_ul[peer.id] = 1
 
         # One could look at other stuff in the history too here.
@@ -175,9 +176,6 @@ class CCTourney(Peer):
         else:
             logging.debug("Still here: uploading to a random peer")
 
-            # change my internal state for no reason
-            self.dummy_state["cake"] = "pie"
-
             ratio_dict = {}
             chosen = []
             bws = []
@@ -199,24 +197,31 @@ class CCTourney(Peer):
             # Evenly "split" my upload bandwidth among the one chosen requester
 
             # optimistic unchoking
-            while (self.unchoking_fraction * self.up_bw > 1):
+            bandwidth_remaining =self.unchoking_fraction * self.up_bw
+            while (bandwidth_remaining > 1):
                 random_request = random.choice(requests)
                 # boolean variable for if we have chosen all the requests already,
                 # no need for unchoking in that case. 
-                unchoke = False
+                unchoke = 0
                 for req in requests:
                     if req.requester_id not in chosen:
-                        unchoke = True
+                        unchoke = unchoke + 1
 
-                while random_request.requester_id in chosen and unchoke == True:
+                while random_request.requester_id in chosen and unchoke > 0:
                         random_request = random.choice(requests)
 
-                chosen.append(random_request.requester_id)
-                # give the person one unit of bandwidth 
-                bws.append(1)
+                if unchoke > 0:
+                    chosen.append(random_request.requester_id)
+                    # give the person one unit of bandwidth 
+                    bws.append(1)
+                    bandwidth_remaining = bandwidth_remaining-1
+                    unchoke = unchoke - 1
+                else:
+                    break
+
 
                 # unchoking fraction decays as we need less pieces
-                self.unchoking_fraction = self.unchoking_fraction * still_needed_ratio
+            self.unchoking_fraction = self.unchoking_fraction * still_needed_ratio
 
         # create actual uploads out of the list of peer ids and bandwidths
         uploads = [Upload(self.id, peer_id, bw)

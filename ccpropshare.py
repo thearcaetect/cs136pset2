@@ -8,6 +8,7 @@
 
 import random
 import logging
+import math
 
 from messages import Upload, Request
 from util import even_split
@@ -16,8 +17,7 @@ from peer import Peer
 class CCPropShare(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
-        self.dummy_state = dict()
-        self.dummy_state["threshold"] = 4
+        self.threshold = 4
         self.num_slots = 3
     
     def requests(self, peers, history):
@@ -79,7 +79,7 @@ class CCPropShare(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"]: 
+            if history.current_round() < self.threshold: 
                 for piece_id in random.sample(isect, n):
                     # aha! The peer has this piece! Request it.
                     # which part of the piece do we need next?
@@ -90,10 +90,10 @@ class CCPropShare(Peer):
             else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
-                    if key in av_set and len(piece_request_list) < n:
+                    if key in av_set:
                         piece_request_list.append(key)
 
-                for piece_id in piece_request_list:
+                for piece_id in random.sample(piece_request_list[:max(len(self.pieces)/3, 20)],n):
                 # aha! The peer has this piece! Request it.
                 # which part of the piece do we need next?
                 # (must get the next-needed blocks in order)
@@ -102,6 +102,8 @@ class CCPropShare(Peer):
                     start_block = self.pieces[piece_id]
                     r = Request(self.id, peer.id, piece_id, start_block)
                     requests.append(r)
+       # print("my requests")
+       # print(requests)
 
         return requests
 
@@ -134,6 +136,7 @@ class CCPropShare(Peer):
                 download_dict[download.from_id] = download.blocks
 
         chosen_dict = {}
+        output_dict = {}
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
         else:
@@ -154,8 +157,7 @@ class CCPropShare(Peer):
                             already_chosen = True
 
             bw_sum = sum(chosen_dict.values())
-            for x in chosen_dict:  
-                chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
+           
                 
             # optimistic unchoking
             random_request = random.choice(requests)
@@ -170,11 +172,31 @@ class CCPropShare(Peer):
             while random_request.requester_id in chosen_dict and unchoke == True:
                     random_request = random.choice(requests)
             
-            chosen_dict[random_request.requester_id] = (round(0.1 * self.up_bw - 0.49))
+            
+            if unchoke == True:
+                output_dict[random_request.requester_id] = math.floor(0.1 * self.up_bw)
+                for x in chosen_dict:  
+                    output_dict[x] = math.floor(0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1))
+                if sum(output_dict.values()) > self.up_bw:
+                        print ('e1')
+            else:
+                for x in output_dict:  
+                    output_dict[x] = math.floor(output_dict[x] * self.up_bw / max(bw_sum, 1))
+                    if sum(output_dict.values()) > self.up_bw:
+                        print ('e2')
+
+            #if unchoke == True:
+            #    chosen_dict[random_request.requester_id] = (round(0.1 * self.up_bw - 0.49))
+             #   for x in chosen_dict:  
+            #        chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
+            #else:
+            #    for x in chosen_dict:  
+            #        chosen_dict[x] = round((chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
             # print(chosen)
             # print(bws)
+            print(chosen_dict)
         # create actual uploads out of the list of peer ids and bandwidths
-        uploads = [Upload(self.id, peer_id, chosen_dict[peer_id])
-                   for peer_id in chosen_dict]
+        uploads = [Upload(self.id, peer_id, output_dict[peer_id])
+                   for peer_id in output_dict]
 
         return uploads

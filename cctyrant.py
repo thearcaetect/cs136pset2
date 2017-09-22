@@ -16,11 +16,10 @@ from peer import Peer
 class CCTyrant(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
-        self.dummy_state = dict()
-        self.dummy_state["threshold"] = 4
+        self.threshold = 4
         self.rho = 3
-        self.alpha = 0.2
-        self.gamma = 0.1
+        self.alpha = 0.1
+        self.gamma = 0.05
         # dicttionaries for expected upload and download
         self.expected_dl = {}
         self.expected_ul = {}
@@ -85,7 +84,7 @@ class CCTyrant(Peer):
             # More symmetry breaking -- ask for random pieces.
             # This would be the place to try fancier piece-requesting strategies
             # to avoid getting the same thing from multiple peers at a time.
-            if history.current_round() < self.dummy_state["threshold"]: 
+            if history.current_round() < self.threshold: 
                 for piece_id in random.sample(isect, n):
                     # aha! The peer has this piece! Request it.
                     # which part of the piece do we need next?
@@ -96,10 +95,10 @@ class CCTyrant(Peer):
             else:
                 piece_request_list = []
                 for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
-                    if key in av_set and len(piece_request_list) < n:
+                    if key in av_set:
                         piece_request_list.append(key)
 
-                for piece_id in piece_request_list:
+                for piece_id in random.sample(piece_request_list[:max(len(self.pieces)/3, 20)],n):
                 # aha! The peer has this piece! Request it.
                 # which part of the piece do we need next?
                 # (must get the next-needed blocks in order)
@@ -108,6 +107,8 @@ class CCTyrant(Peer):
                     start_block = self.pieces[piece_id]
                     r = Request(self.id, peer.id, piece_id, start_block)
                     requests.append(r)
+       # print("my requests")
+       # print(requests)
 
         return requests
 
@@ -128,7 +129,7 @@ class CCTyrant(Peer):
 
         if curr_round == 0:
             for peer in peers:
-                self.expected_dl[peer.id] = 1
+                self.expected_dl[peer.id] = 0
                 self.expected_ul[peer.id] = 1
 
         # One could look at other stuff in the history too here.
@@ -174,8 +175,6 @@ class CCTyrant(Peer):
         else:
             logging.debug("Still here: uploading to a random peer")
 
-            # change my internal state for no reason
-            self.dummy_state["cake"] = "pie"
 
             ratio_dict = {}
             chosen = []
