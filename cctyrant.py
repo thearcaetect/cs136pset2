@@ -95,7 +95,7 @@ class CCTyrant(Peer):
                     requests.append(r)
             else:
                 piece_request_list = []
-                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
+                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
                     if key in av_set and len(piece_request_list) < n:
                         piece_request_list.append(key)
 
@@ -184,7 +184,7 @@ class CCTyrant(Peer):
             print self.expected_dl
             for peer in peers:
                 ratio_dict[peer.id] = self.expected_dl[peer.id] / self.expected_ul[peer.id]
-                for key, value in sorted(ratio_dict.iteritems(), key= lambda (k, v): (v, k)):
+                for key, value in sorted(ratio_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
                     if capacity_used + self.expected_ul[key] <= self.up_bw:
                         chosen.append(key)
                         bws.append(self.expected_ul[key])

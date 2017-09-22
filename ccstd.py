@@ -89,7 +89,7 @@ class CCStd(Peer):
                     requests.append(r)
             else:
                 piece_request_list = []
-                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
+                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
                     if key in av_set and len(piece_request_list) < n:
                         piece_request_list.append(key)
 
@@ -157,24 +157,21 @@ class CCStd(Peer):
             # change my internal state for no reason
             # list of who we will upload to
             chosen = []
-            # TODO: check sorting direction, should be HIGH to LOW
-            for num, speed in sorted(download_dict.iteritems(), key=lambda (k,v): (v,k)):
+            dl_dict_items = download_dict.items()
+            dl_dict_items.sort(key=lambda x: x[1], reverse=True)
+            for tup in dl_dict_items:
+                num = tup[0]
+                speed = tup[1]
                 double_count = False
                 for request in requests:
                     if num == request.requester_id and double_count == False and len(chosen) < self.num_slots:
                         chosen.append(num)
                         double_count = True
-                        print 'CHOSEN'
-                        print chosen
+                        # print 'CHOSEN'
+                        # print chosen
 
             # optimistic unchoking
             random_request = random.choice(requests)
-            # TODO: stop after gone through all requests
-            print 'YOOOO'
-            print random_request.requester_id
-            print chosen
-            print requests
-
             # boolean variable for if we have chosen all the requests already,
             # no need for unchoking in that case. 
             unchoke = False

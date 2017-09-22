@@ -89,7 +89,7 @@ class CCPropShare(Peer):
                     requests.append(r)
             else:
                 piece_request_list = []
-                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k)):
+                for key, value in sorted(rareness_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
                     if key in av_set and len(piece_request_list) < n:
                         piece_request_list.append(key)
 
@@ -138,12 +138,13 @@ class CCPropShare(Peer):
             logging.debug("No one wants my pieces!")
         else:
             logging.debug("Still here: uploading to peers")
-            # change my internal state for no reason
             # initialize dictionary with peer ids as keys and bandwidth
             # allocated as values
-            
-            # check that dict is sorted by highest speed first
-            for num, speed in sorted(download_dict.iteritems(), key=lambda (k,v): (v,k)):
+            dl_dict_items = download_dict.items()
+            dl_dict_items.sort(key=lambda x: x[1], reverse=True)
+            for tup in dl_dict_items:
+                num = tup[0]
+                speed = tup[1]
                 already_chosen = False
                 # total speed allows for possibility of getting piece 1 and piece 2
                 for request in requests:
@@ -155,6 +156,7 @@ class CCPropShare(Peer):
             bw_sum = sum(chosen_dict.values())
             for x in chosen_dict:  
                 chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
+                
             # optimistic unchoking
             random_request = random.choice(requests)
 
