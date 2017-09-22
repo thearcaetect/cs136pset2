@@ -164,11 +164,26 @@ class CCStd(Peer):
                     if num == request.requester_id and double_count == False and len(chosen) < self.num_slots:
                         chosen.append(num)
                         double_count = True
+                        print 'CHOSEN'
+                        print chosen
 
             # optimistic unchoking
             random_request = random.choice(requests)
-            while random_request.requester_id in chosen:
-                random_request = random.choice(requests)
+            # TODO: stop after gone through all requests
+            print 'YOOOO'
+            print random_request.requester_id
+            print chosen
+            print requests
+
+            # boolean variable for if we have chosen all the requests already,
+            # no need for unchoking in that case. 
+            unchoke = False
+            for req in requests:
+                if req.requester_id not in chosen:
+                    unchoke = True
+
+            while random_request.requester_id in chosen and unchoke == True:
+                    random_request = random.choice(requests)
 
             chosen.append(random_request.requester_id)
             # Evenly "split" my upload bandwidth among the one chosen requesters

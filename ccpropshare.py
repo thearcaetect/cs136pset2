@@ -157,9 +157,16 @@ class CCPropShare(Peer):
                 chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
             # optimistic unchoking
             random_request = random.choice(requests)
-            # TODO: stop after gone through all requests
-            for i in range(len) random_request.requester_id in chosen_dict:
-                random_request = random.choice(requests)
+
+            # boolean variable for if we have chosen all the requests already,
+            # no need for unchoking in that case. 
+            unchoke = False
+            for req in requests:
+                if req.requester_id not in chosen_dict:
+                    unchoke = True
+
+            while random_request.requester_id in chosen_dict and unchoke == True:
+                    random_request = random.choice(requests)
             
             chosen_dict[random_request.requester_id] = (round(0.1 * self.up_bw - 0.49))
             # print(chosen)
