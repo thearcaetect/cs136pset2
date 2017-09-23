@@ -8,6 +8,7 @@
 
 import random
 import logging
+import math
 
 from messages import Upload, Request
 from util import even_split
@@ -17,14 +18,7 @@ class CCTourney(Peer):
     def post_init(self):
         print "post_init(): %s here!" % self.id
         self.threshold = 4
-        self.rho = 3
-        self.alpha = 0.2
-        self.gamma = 0.1
-        self.unchoking_fraction = 0.3
-        # dictionaries for expected upload and download
-        self.expected_dl = {}
-        self.expected_ul = {}
-
+        self.num_slots = 3
     
     def requests(self, peers, history):
         """
@@ -124,107 +118,90 @@ class CCTourney(Peer):
         In each round, this will be called after requests().
         """
         curr_round = history.current_round()
-        # initialize in first round all speeds to 1
         logging.debug("%s again.  It's round %d." % (
-                      self.id, curr_round))
-
-        if curr_round == 0:
-            for peer in peers:
-                self.expected_dl[peer.id] = 0
-                self.expected_ul[peer.id] = 1
-
+            self.id, curr_round))
         # One could look at other stuff in the history too here.
         # For example, history.downloads[round-1] (if round != 0, of course)
         # has a list of Download objects for each Download to this peer in
         # the previous round.
+        past_downloads = {}
+        if curr_round > 0.0:
+            past_downloads = history.downloads[curr_round-1]
 
-        else:
-            # update ratios based on histories
-            last_round = history.downloads[curr_round - 1]
+        download_dict = {}
+        for download in past_downloads:
+            if download.from_id in download_dict:
+                download_dict[download.from_id] += download.blocks
+            else:
+                download_dict[download.from_id] = download.blocks
 
-            download_dict = {}
-            for download in last_round:
-                if download.from_id in download_dict:
-                    download_dict[download.from_id] += download.blocks
-                else:
-                    download_dict[download.from_id] = download.blocks
-
-            for peer in peers:
-                if peer.id not in download_dict:
-                    self.expected_ul[peer.id] = (1 + self.alpha) * self.expected_ul[peer.id]
-                else:
-                    self.expected_dl[peer.id] = download_dict[peer.id]
-                    counter = 0
-                    max_round = min(curr_round, self.rho)
-                    for i in range(max_round):
-                        # print history.downloads
-                        # print curr_round
-                        # print max_round
-                        # print i
-                        my_round = history.downloads[curr_round - i - 1]
-                        for download in my_round:
-                            if download.from_id == peer.id:
-                                counter += 1
-                    if counter == max_round:
-                        self.expected_ul[peer.id] = (1-self.gamma) * self.expected_ul[peer.id]
-
-
+        chosen_dict = {}
+        output_dict = {}
         if len(requests) == 0:
             logging.debug("No one wants my pieces!")
-            chosen = []
-            bws = []
         else:
-            logging.debug("Still here: uploading to a random peer")
+            logging.debug("Still here: uploading to peers")
+            # initialize dictionary with peer ids as keys and bandwidth
+            # allocated as values
+            dl_dict_items = download_dict.items()
+            dl_dict_items.sort(key=lambda x: x[1], reverse=True)
+            for tup in dl_dict_items:
+                num = tup[0]
+                speed = tup[1]
+                already_chosen = False
+                # total speed allows for possibility of getting piece 1 and piece 2
+                for request in requests:
+                    if num == request.requester_id:
+                        if already_chosen == False:
+                            chosen_dict[num] = speed
+                            already_chosen = True
 
-            ratio_dict = {}
-            chosen = []
-            bws = []
-            capacity_used = 0
-
+            bw_sum = sum(chosen_dict.values())
+           
             needed = lambda i: self.pieces[i] < self.conf.blocks_per_piece
             needed_pieces = filter(needed, range(len(self.pieces)))
-            still_needed_ratio = len(needed_pieces) / len(self.pieces)
-
-            # print self.expected_dl
-            for peer in peers:
-                ratio_dict[peer.id] = self.expected_dl[peer.id] / self.expected_ul[peer.id]
-                for key, value in sorted(ratio_dict.iteritems(), key= lambda (k, v): (v, k), reverse=True):
-                    if capacity_used + self.expected_ul[key] <= self.up_bw * (1 - self.unchoking_fraction):
-                        chosen.append(key)
-                        bws.append(self.expected_ul[key])
-                        capacity_used += self.expected_ul[key]
-
-            # Evenly "split" my upload bandwidth among the one chosen requester
-
+            np_set = set(needed_pieces)  
+                
             # optimistic unchoking
-            bandwidth_remaining =self.unchoking_fraction * self.up_bw
-            while (bandwidth_remaining > 1):
-                random_request = random.choice(requests)
-                # boolean variable for if we have chosen all the requests already,
-                # no need for unchoking in that case. 
-                unchoke = 0
-                for req in requests:
-                    if req.requester_id not in chosen:
-                        unchoke = unchoke + 1
+            random_request = random.choice(requests)
+            unchoke_list = []
 
-                while random_request.requester_id in chosen and unchoke > 0:
-                        random_request = random.choice(requests)
+            # boolean variable for if we have chosen all the requests already,
+            # no need for unchoking in that case. 
+            for req in requests:
+                if req.requester_id not in chosen_dict:
+                    for peer in peers:
+                        if req.requester_id == peer.id and peer not in unchoke_list:
+                            peer_piece_set = peer.available_pieces
+                            peer_set = set(peer_piece_set)
+                            if len(peer_set.intersection(np_set)) != 0:
+                                unchoke_list.append(peer)
 
-                if unchoke > 0:
-                    chosen.append(random_request.requester_id)
-                    # give the person one unit of bandwidth 
-                    bws.append(1)
-                    bandwidth_remaining = bandwidth_remaining-1
-                    unchoke = unchoke - 1
-                else:
-                    break
+            if len(unchoke_list) != 0:
+                random_peer = random.choice(unchoke_list)
+                output_dict[random_peer.id] = math.floor(0.25 * self.up_bw)
+                for x in chosen_dict:  
+                    output_dict[x] = math.floor(0.75 * chosen_dict[x] * self.up_bw / max(bw_sum, 1))
+                if sum(output_dict.values()) > self.up_bw:
+                        print ('e1')
+            else:
+                for x in output_dict:  
+                    output_dict[x] = math.floor(output_dict[x] * self.up_bw / max(bw_sum, 1))
+                    if sum(output_dict.values()) > self.up_bw:
+                        print ('e2')
 
-
-                # unchoking fraction decays as we need less pieces
-            self.unchoking_fraction = self.unchoking_fraction * still_needed_ratio
-
+            #if unchoke == True:
+            #    chosen_dict[random_request.requester_id] = (round(0.1 * self.up_bw - 0.49))
+             #   for x in chosen_dict:  
+            #        chosen_dict[x] = round((0.9 * chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
+            #else:
+            #    for x in chosen_dict:  
+            #        chosen_dict[x] = round((chosen_dict[x] * self.up_bw / max(bw_sum, 1)) - 0.49)
+            # print(chosen)
+            # print(bws)
+            print(chosen_dict)
         # create actual uploads out of the list of peer ids and bandwidths
-        uploads = [Upload(self.id, peer_id, bw)
-                   for (peer_id, bw) in zip(chosen, bws)]
-            
+        uploads = [Upload(self.id, peer_id, output_dict[peer_id])
+                   for peer_id in output_dict]
+
         return uploads
