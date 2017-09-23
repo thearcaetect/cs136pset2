@@ -3,6 +3,7 @@
 i.) BitTyrant vs. Std client results:
 command run: python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCTyrant,1
 
+stat sample:
 ======== STATS ========
 Uploaded blocks:
 CCTyrant0: 391, bw=56
@@ -31,6 +32,8 @@ CCStd7: 32
 CCStd6: 32
 CCTyrant0: 33
 All done round: 33
+
+
 ======== SUMMARY STATS ========
 Uploaded blocks: avg (stddev)
 CCTyrant0: 341.3  (126.0)
@@ -63,6 +66,7 @@ CCTyrant0: 32.05  (1.35922772191)
 ii.) CCTourney vs. Std client
 command run: python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCTourney,1
 
+stat sample:
 ======== STATS ========
 Uploaded blocks:
 CCTourney0: 997, bw=44
@@ -128,6 +132,7 @@ iii.) PropShare vs. Std client
 command run:
 python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCPropShare,1
 
+stat sample:
 ======== STATS ========
 Uploaded blocks:
 CCStd8: 1019, bw=33

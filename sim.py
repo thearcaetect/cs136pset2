@@ -337,6 +337,7 @@ class Sim:
         logging.info("======== STATS ========")
         logging.info("Uploaded blocks:\n%s" %
                      Stats.uploaded_blocks_str(self.peer_ids, history))
+        print history
         logging.info("Completion rounds:\n%s" %
                      Stats.completion_rounds_str(self.peer_ids, history))
         logging.info("All done round: %s" %
