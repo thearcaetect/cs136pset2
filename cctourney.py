@@ -179,9 +179,9 @@ class CCTourney(Peer):
 
             if len(unchoke_list) != 0:
                 random_peer = random.choice(unchoke_list)
-                output_dict[random_peer.id] = math.floor(0.25 * self.up_bw)
+                output_dict[random_peer.id] = math.floor(0.35 * self.up_bw)
                 for x in chosen_dict:  
-                    output_dict[x] = math.floor(0.75 * chosen_dict[x] * self.up_bw / max(bw_sum, 1))
+                    output_dict[x] = math.floor(0.65 * chosen_dict[x] * self.up_bw / max(bw_sum, 1))
                 if sum(output_dict.values()) > self.up_bw:
                         print ('e1')
             else:

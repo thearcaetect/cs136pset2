@@ -1,184 +1,185 @@
 2c.) 
 
 i.) BitTyrant vs. Std client results:
-command run: sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCTyrant,5 CCStd,5
-
+command run: python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCTyrant,1
 
 ======== STATS ========
 Uploaded blocks:
-CCTyrant0: 77, bw=35
-CCTyrant1: 109, bw=52
-CCTyrant2: 122, bw=56
-CCTyrant4: 192, bw=42
-CCTyrant3: 309, bw=62
-CCStd0: 1469, bw=55
-CCStd2: 1631, bw=49
-CCStd3: 1882, bw=49
-CCStd4: 2095, bw=53
-CCStd1: 2309, bw=63
-Seed0: 3641, bw=64
-Seed1: 3701, bw=64
+CCTyrant0: 391, bw=56
+CCStd6: 1400, bw=35
+CCStd2: 1672, bw=32
+CCStd4: 1882, bw=42
+CCStd7: 2301, bw=47
+CCStd1: 2550, bw=33
+CCStd3: 2736, bw=64
+CCStd0: 2898, bw=63
+CCStd8: 3155, bw=42
+CCStd5: 3195, bw=62
+Seed1: 4616, bw=64
+Seed0: 4643, bw=64
 Completion rounds:
 Seed0: 0
 Seed1: 0
-CCStd0: 33
+CCStd0: 29
+CCStd1: 31
+CCStd3: 31
+CCStd5: 31
+CCStd8: 31
+CCStd2: 32
+CCStd4: 32
+CCStd7: 32
+CCStd6: 32
 CCTyrant0: 33
-CCStd3: 34
-CCStd2: 34
-CCStd4: 34
-CCTyrant2: 34
-CCStd1: 35
-CCTyrant3: 35
-CCTyrant4: 36
-CCTyrant1: 36
-All done round: 36
+All done round: 33
 ======== SUMMARY STATS ========
 Uploaded blocks: avg (stddev)
-CCTyrant0: 178.3  (82.1)
-CCTyrant3: 212.2  (124.8)
-CCTyrant4: 219.5  (103.9)
-CCTyrant2: 225.3  (100.0)
-CCTyrant1: 226.9  (114.5)
-CCStd0: 1595.0  (250.3)
-CCStd2: 1671.7  (383.2)
-CCStd4: 1697.7  (360.5)
-CCStd3: 1754.8  (292.0)
-CCStd1: 1925.2  (478.1)
-Seed1: 4051.2  (219.7)
-Seed0: 4099.5  (253.3)
+CCTyrant0: 341.3  (126.0)
+CCStd6: 1935.3  (648.2)
+CCStd4: 2115.3  (597.8)
+CCStd0: 2156.2  (495.6)
+CCStd2: 2184.1  (489.5)
+CCStd1: 2199.0  (437.7)
+CCStd5: 2234.1  (627.1)
+CCStd7: 2246.4  (689.9)
+CCStd8: 2354.4  (580.9)
+CCStd3: 2458.8  (499.7)
+Seed1: 4531.0  (195.0)
+Seed0: 4561.5  (177.1)
 Completion rounds: avg (stddev)
 Seed0: 0.0  (0.0)
 Seed1: 0.0  (0.0)
-CCTyrant0: 36.65  (1.90459969547)
-CCTyrant1: 37.0  (2.14476105895)
-CCStd2: 37.35  (2.1277922831)
-CCStd1: 37.55  (2.45916652547)
-CCStd4: 37.55  (2.13248681121)
-CCStd0: 37.65  (2.8332843133)
-CCStd3: 37.8  (2.46170672502)
-CCTyrant3: 38.0  (1.64316767252)
-CCTyrant2: 38.05  (1.96150452459)
-CCTyrant4: 38.05  (1.59608896995)
+CCStd5: 30.75  (1.54515371404)
+CCStd3: 30.8  (1.83303027798)
+CCStd8: 30.9  (1.54596248337)
+CCStd0: 31.2  (1.88679622641)
+CCStd1: 31.2  (1.43527000944)
+CCStd4: 31.25  (1.66958078571)
+CCStd2: 31.3  (1.48660687473)
+CCStd6: 31.3  (1.70587221092)
+CCStd7: 31.4  (1.42828568571)
+CCTyrant0: 32.05  (1.35922772191)
 
 
 ii.) CCTourney vs. Std client
-command run: python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCTourney,5 CCStd,5
-
+command run: python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCTourney,1
 
 ======== STATS ========
 Uploaded blocks:
-CCTourney3: 43, bw=59
-CCTourney2: 197, bw=64
-CCTourney0: 197, bw=42
-CCTourney1: 241, bw=39
-CCTourney4: 533, bw=63
-CCStd4: 1297, bw=39
-CCStd3: 1359, bw=41
-CCStd0: 1448, bw=37
-CCStd2: 1993, bw=54
-CCStd1: 2031, bw=43
-Seed0: 4584, bw=64
-Seed1: 4608, bw=64
+CCTourney0: 997, bw=44
+CCStd4: 1242, bw=32
+CCStd8: 1574, bw=54
+CCStd6: 1709, bw=43
+CCStd0: 1721, bw=36
+CCStd7: 2050, bw=52
+CCStd1: 2077, bw=54
+CCStd2: 2518, bw=57
+CCStd5: 2537, bw=58
+CCStd3: 2813, bw=57
+Seed1: 4157, bw=64
+Seed0: 4224, bw=64
 Completion rounds:
 Seed0: 0
 Seed1: 0
-CCStd3: 41
-CCStd4: 41
-CCStd1: 42
-CCStd0: 42
-CCStd2: 42
-CCTourney4: 42
-CCTourney3: 42
-CCTourney0: 43
-CCTourney2: 44
-CCTourney1: 44
-All done round: 44
+CCStd1: 27
+CCStd5: 28
+CCStd3: 29
+CCStd2: 29
+CCTourney0: 29
+CCStd0: 30
+CCStd4: 30
+CCStd6: 30
+CCStd8: 30
+CCStd7: 30
+All done round: 30
 ======== SUMMARY STATS ========
 Uploaded blocks: avg (stddev)
-CCTourney1: 177.6  (79.6)
-CCTourney3: 208.4  (122.5)
-CCTourney2: 210.5  (115.5)
-CCTourney4: 219.6  (154.0)
-CCTourney0: 271.8  (127.2)
-CCStd3: 1607.8  (365.0)
-CCStd2: 1607.9  (339.1)
-CCStd4: 1681.3  (301.7)
-CCStd0: 1735.7  (469.5)
-CCStd1: 1771.1  (334.5)
-Seed1: 4185.3  (226.0)
-Seed0: 4285.5  (220.4)
+CCStd6: 2028.8  (585.1)
+CCStd0: 2070.7  (622.6)
+CCStd8: 2093.6  (483.4)
+CCStd1: 2136.0  (512.4)
+CCTourney0: 2141.3  (623.7)
+CCStd2: 2195.6  (587.9)
+CCStd4: 2211.4  (600.5)
+CCStd7: 2273.5  (694.1)
+CCStd3: 2293.4  (484.0)
+CCStd5: 2335.6  (624.2)
+Seed1: 4530.4  (191.3)
+Seed0: 4556.8  (196.8)
 Completion rounds: avg (stddev)
 Seed0: 0.0  (0.0)
 Seed1: 0.0  (0.0)
-CCTourney0: 37.45  (2.41816045787)
-CCStd1: 38.0  (2.25831795813)
-CCStd3: 38.1  (2.48797106092)
-CCStd2: 38.2  (2.52190404258)
-CCStd4: 38.25  (2.6244046944)
-CCStd0: 38.35  (2.43464576479)
-CCTourney3: 39.1  (1.7)
-CCTourney2: 39.15  (2.28637267303)
-CCTourney1: 39.3  (1.84661853126)
-CCTourney4: 39.45  (1.88348082018)
+CCTourney0: 30.65  (1.45859521458)
+CCStd7: 30.7  (1.41774468788)
+CCStd5: 30.8  (1.3638181697)
+CCStd8: 30.9  (1.33790881603)
+CCStd4: 31.0  (1.48323969742)
+CCStd6: 31.0  (1.70293863659)
+CCStd2: 31.25  (1.25996031684)
+CCStd1: 31.3  (1.73493515729)
+CCStd0: 31.35  (1.35185058346)
+CCStd3: 31.35  (1.65151445649)
+
+
+
+
 
 
 iii.) PropShare vs. Std client
 command run:
-python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCPropShare,5 CCStd,5
-
+python sim.py --iters=20 --loglevel=info --num-pieces=32 --blocks-per-piece=32 --min-bw=32 --max-bw=64 --max-round=1000 Seed,2 CCStd,9 CCPropShare,1
 
 ======== STATS ========
 Uploaded blocks:
-CCPropShare0: 906, bw=47
-CCStd1: 995, bw=41
-CCStd2: 1005, bw=42
-CCPropShare3: 1161, bw=36
-CCPropShare2: 1255, bw=40
-CCStd3: 1301, bw=46
-CCStd0: 1377, bw=49
-CCStd4: 1464, bw=61
-CCPropShare1: 1686, bw=62
-CCPropShare4: 1791, bw=61
-Seed1: 3457, bw=64
-Seed0: 3517, bw=64
+CCStd8: 1019, bw=33
+CCPropShare0: 1110, bw=55
+CCStd5: 1654, bw=40
+CCStd1: 1812, bw=40
+CCStd7: 1870, bw=33
+CCStd0: 2175, bw=40
+CCStd2: 2292, bw=34
+CCStd3: 2462, bw=39
+CCStd6: 2936, bw=64
+CCStd4: 3232, bw=63
+Seed0: 4592, bw=64
+Seed1: 4621, bw=64
 Completion rounds:
 Seed0: 0
 Seed1: 0
+CCStd6: 29
+CCStd8: 30
 CCStd0: 31
-CCPropShare2: 31
+CCStd4: 31
+CCStd1: 32
 CCStd3: 32
 CCStd2: 32
-CCPropShare0: 32
-CCPropShare1: 32
-CCPropShare4: 32
-CCStd1: 33
-CCStd4: 33
-CCPropShare3: 33
+CCStd5: 32
+CCStd7: 32
+CCPropShare0: 33
 All done round: 33
 ======== SUMMARY STATS ========
 Uploaded blocks: avg (stddev)
-CCPropShare1: 1193.7  (302.0)
-CCPropShare4: 1251.4  (313.7)
-CCPropShare3: 1292.1  (283.1)
-CCPropShare0: 1315.8  (318.4)
-CCPropShare2: 1334.4  (217.6)
-CCStd4: 1410.6  (351.8)
-CCStd3: 1472.3  (477.3)
-CCStd1: 1478.3  (481.4)
-CCStd2: 1481.1  (419.9)
-CCStd0: 1623.6  (390.8)
-Seed1: 3399.6  (153.7)
-Seed0: 3448.2  (149.0)
+CCPropShare0: 1659.4  (430.5)
+CCStd1: 1820.4  (449.1)
+CCStd2: 2081.0  (514.8)
+CCStd7: 2104.8  (524.8)
+CCStd8: 2109.8  (516.0)
+CCStd5: 2120.2  (453.2)
+CCStd6: 2163.4  (461.2)
+CCStd4: 2228.6  (518.2)
+CCStd3: 2273.5  (539.9)
+CCStd0: 2303.8  (475.2)
+Seed1: 4538.3  (157.9)
+Seed0: 4553.3  (148.0)
 Completion rounds: avg (stddev)
 Seed0: 0.0  (0.0)
 Seed1: 0.0  (0.0)
-CCStd0: 31.2  (1.50332963784)
-CCStd3: 31.2  (1.80554700853)
-CCStd2: 31.7  (1.41774468788)
-CCPropShare0: 31.8  (1.3638181697)
-CCPropShare1: 31.85  (1.55804364509)
-CCStd4: 31.85  (1.38834433769)
-CCPropShare2: 31.95  (1.2835497653)
-CCStd1: 32.0  (1.41421356237)
-CCPropShare4: 32.35  (0.909670269933)
-CCPropShare3: 32.4  (1.2409673646)
+CCStd4: 30.95  (1.3955285737)
+CCStd6: 30.95  (1.49916643506)
+CCStd8: 30.95  (0.973396116697)
+CCStd0: 31.0  (1.1401754251)
+CCPropShare0: 31.0  (1.51657508881)
+CCStd7: 31.05  (1.32193040664)
+CCStd3: 31.2  (1.43527000944)
+CCStd2: 31.25  (1.08972473589)
+CCStd1: 31.3  (1.41774468788)
+CCStd5: 31.35  (1.31434394281)
